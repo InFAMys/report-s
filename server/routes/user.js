@@ -46,22 +46,47 @@ users.post('/register', async (req, res) => {
   })
 })
 
-users.post('/login', async (req, res) => {
+users.post('/login', (req, res) => {
+  let data = req.body
+  let username = data.username;
+  let password = data.password;
+  if (username && password) {
+    db.query('SELECT * FROM user WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
+      if (results.length > 0) {
+        let token = jwt.sign(data.username + '|' + data.password, userKey)
+        res.json({
+          success: true,
+          message: 'Logged In!',
+        });
+        console.log(token);
+      } else {
+        res.json({
+          success: false,
+          message: 'Invalid Credential!',
+        });
+      }
+      res.end();
+    });
+  }
+})
+
+users.post('/2', async (req, res) => {
   try {
     let data = req.body
     let username = data.username;
     let password = data.password;
     let ver = 'SELECT * FROM user WHERE username = ?';
+    let token = jwt.sign({username, password}, userKey)
 
     await db.query(ver, [username], (err, db) => {
       bcrypt.compare(data.password, db[0].password, (err, validate) => {
         if (err) throw err
         else if (validate == true) {
-          let token = jwt.sign(data.username + '|' + data.password, userKey)
           res.json({
             success: true,
             message: 'Logged In!',
           });
+          console.log(token);
         } else {
           res.json({
             success: false,
