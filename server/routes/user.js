@@ -61,8 +61,9 @@ users.post('/login', async (req, res) => {
           res.json({
             success: true,
             message: 'Logged In!',
+            token
           });
-          console.log(token);
+          // console.log(token);
         } else {
           res.json({
             success: false,
